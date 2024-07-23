@@ -1,8 +1,7 @@
-from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx import Document
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
-from docx.shared import Pt, Inches
+from docx.shared import Pt, Inches, Cm
 
 
 def set_cell_border(cell, **kwargs):
@@ -44,37 +43,45 @@ def set_cell_border(cell, **kwargs):
 
 document = Document()
 
-document.add_paragraph()
+sections = document.sections
+for section in sections:
+    section.top_margin = Cm(0.5)
+    section.bottom_margin = Cm(0.5)
+    section.left_margin = Cm(0.5)
+    section.right_margin = Cm(0.5)
+    section.right_margin = Cm(0.5)
+
 sdl_table = document.add_table(rows=3, cols=2)
 items = [
     ("Источник информации: ", "info"),
     ("Дата публикации: ", "info"),
     ("Ссылка на источник: ", "info")
 ]
+column = sdl_table.columns[0]
+column.width = Inches(2)
 
-
-sdl_table.cell(row_idx=0, col_idx=0).text = "Источник информации:"
-sdl_table.cell(row_idx=1, col_idx=0).text = "Дата публикации:"
-sdl_table.cell(row_idx=2, col_idx=0).text = "Ссылка на источник:"
-sdl_table.cell(row_idx=0, col_idx=1).text = "Источник информации:"
-sdl_table.cell(row_idx=1, col_idx=1).text = "Дата публикации:"
-sdl_table.cell(row_idx=2, col_idx=1).text = "Ссылка на источник:"
+cell0 = sdl_table.cell(row_idx=0, col_idx=0).text = "Источник:"
+cell1 = sdl_table.cell(row_idx=0, col_idx=1).text = "info"
+cell2 = sdl_table.cell(row_idx=1, col_idx=0).text = "Опубликовано:"
+cell3 = sdl_table.cell(row_idx=1, col_idx=1).text = "info"
+cell4 = sdl_table.cell(row_idx=2, col_idx=0).text = "Ссылка на источник:"
+cell5 = sdl_table.cell(row_idx=2, col_idx=1).text = "info"
 
 # обнуление обводки, смена шрифта, размера шрифта + bold
-# костыль с счетчиком, чтобы выровнять четные ячейки
+
 counter = 0
 for row in sdl_table.rows:
     for cell in row.cells:
-        if counter > 0:
-            cell.paragraphs[0].alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT
-            counter = 0
-        else:
-            counter += 1
         cell.paragraphs[0].add_run('')
         rc = cell.paragraphs[0].runs[0]
         rc.font.size = Pt(14)
         rc.font.name = 'TimesNewRoman'
-        rc.font.bold = True
+        if counter == 0:
+            rc.font.bold = True
+            rc.font.underline = True
+            counter += 1
+        else:
+            counter = 0
         set_cell_border(
             cell,
             top={"sz": 0},
@@ -83,7 +90,8 @@ for row in sdl_table.rows:
             end={"sz": 0},
         )
 
-document.add_paragraph('\n')
+
+document.add_paragraph()
 art_header = document.add_paragraph('')
 art_header.paragraph_format.first_line_indent = Inches(0.5)
 art_header.add_run('asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd')
