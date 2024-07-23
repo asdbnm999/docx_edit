@@ -45,27 +45,24 @@ document = Document()
 
 sections = document.sections
 for section in sections:
-    section.top_margin = Cm(0.5)
-    section.bottom_margin = Cm(0.5)
-    section.left_margin = Cm(0.5)
-    section.right_margin = Cm(0.5)
-    section.right_margin = Cm(0.5)
+    section.top_margin = Cm(2.0)
+    section.bottom_margin = Cm(2.0)
+    section.left_margin = Cm(2.5)
+    section.right_margin = Cm(1.0)
 
 sdl_table = document.add_table(rows=3, cols=2)
-items = [
-    ("Источник информации: ", "info"),
-    ("Дата публикации: ", "info"),
-    ("Ссылка на источник: ", "info")
-]
-column = sdl_table.columns[0]
-column.width = Inches(2)
+
+column0 = sdl_table.columns[0]
+column0.width = Inches(2.1)
+column1 = sdl_table.columns[1]
+column1.width = Inches(5)
 
 cell0 = sdl_table.cell(row_idx=0, col_idx=0).text = "Источник:"
-cell1 = sdl_table.cell(row_idx=0, col_idx=1).text = "info"
+cell1 = sdl_table.cell(row_idx=0, col_idx=1).text = "«nrc.gov»"
 cell2 = sdl_table.cell(row_idx=1, col_idx=0).text = "Опубликовано:"
-cell3 = sdl_table.cell(row_idx=1, col_idx=1).text = "info"
+cell3 = sdl_table.cell(row_idx=1, col_idx=1).text = "03.07.2024"
 cell4 = sdl_table.cell(row_idx=2, col_idx=0).text = "Ссылка на источник:"
-cell5 = sdl_table.cell(row_idx=2, col_idx=1).text = "info"
+cell5 = sdl_table.cell(row_idx=2, col_idx=1).text = "https://www.nrc.gov/reading-rm/doc-collections/event-status/event/2024/20240711en.html#en57208"
 
 # обнуление обводки, смена шрифта, размера шрифта + bold
 
@@ -94,14 +91,14 @@ for row in sdl_table.rows:
 document.add_paragraph()
 art_header = document.add_paragraph('')
 art_header.paragraph_format.first_line_indent = Inches(0.5)
-art_header.add_run('asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd')
+art_header.add_run('В США, штат Миссури, город Осейдж-Бич был поврежден плотномер, содержащий цезий-137 и амерций-241')
 art_header.runs[0].font.name = 'TimesNewRoman'
 art_header.runs[0].font.size = Pt(14)
 art_header.runs[0].font.bold = True
 
 article = document.add_paragraph('')
 article.paragraph_format.first_line_indent = Inches(0.5)
-article.add_run('asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd')
+article.add_run('В 11:46 CDT 7/3/2024 сотрудник по радиационной безопасности в Midwest Subsurface Testing сообщил, что на строительной площадке был поврежден датчик. Датчик плотности влаги InstroTek MC1 Elite, содержащий 10 милликюри цезия-137 и 50 милликюри америция-241/бериллия, был опрокинут погрузчиком. Источник застрял в экранированном положении. Было проведено радиологическое обследование, которое подтвердило отсутствие загрязнения. Поврежденный датчик был извлечен и доставлен на предприятие поставщика для проведения испытания на герметичность.\nЭто событие было сообщено в соответствии с 10 CFR 30.50 (b)(2).')
 article.runs[0].font.name = 'TimesNewRoman'
 article.runs[0].font.size = Pt(14)
 
