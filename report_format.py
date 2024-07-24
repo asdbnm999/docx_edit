@@ -6,6 +6,9 @@ from docx.shared import Pt, Inches, Cm
 
 def set_cell_border(cell, **kwargs):
     """
+    изменяет параметры таблицы,
+    использование:
+    
     set_cell_border(
         cell,
         top={"sz": 12, "val": "single", "color": "#FF0000", "space": "0"},
@@ -40,9 +43,10 @@ def set_cell_border(cell, **kwargs):
                 if key in edge_data:
                     element.set(qn('w:{}'.format(key)), str(edge_data[key]))
 
-
+# создал docx
 document = Document()
 
+# отредактировал отступы от краев листа
 sections = document.sections
 for section in sections:
     section.top_margin = Cm(2.0)
@@ -50,13 +54,18 @@ for section in sections:
     section.left_margin = Cm(2.5)
     section.right_margin = Cm(1.0)
 
+# создал таблицу 3х2
 sdl_table = document.add_table(rows=3, cols=2)
 
+# отредактировал ширину колонок
 column0 = sdl_table.columns[0]
 column0.width = Inches(2.1)
+# мб будет проще счетчика, если получится через for перебрать все раны параграфов
+# в первом столбе
 column1 = sdl_table.columns[1]
 column1.width = Inches(5)
 
+# заполнение ячеек
 cell0 = sdl_table.cell(row_idx=0, col_idx=0).text = "Источник:"
 cell1 = sdl_table.cell(row_idx=0, col_idx=1).text = "«nrc.gov»"
 cell2 = sdl_table.cell(row_idx=1, col_idx=0).text = "Опубликовано:"
@@ -65,7 +74,7 @@ cell4 = sdl_table.cell(row_idx=2, col_idx=0).text = "Ссылка на исто�
 cell5 = sdl_table.cell(row_idx=2, col_idx=1).text = "https://www.nrc.gov/reading-rm/doc-collections/event-status/event/2024/20240711en.html#en57208"
 
 # обнуление обводки, смена шрифта, размера шрифта + bold
-
+# тут счетчик, самая простая реализация выделения первого столбца
 counter = 0
 for row in sdl_table.rows:
     for cell in row.cells:
