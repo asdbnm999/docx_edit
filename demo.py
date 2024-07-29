@@ -60,11 +60,11 @@ class WebSourcesFrame(tk.Frame):
             if short_link == 'www.nrc.gov/reading-rm/doc-collections/event-status/event/2024': short_link = 'nrc.gov'
 
             item = self.ws_canvas.create_text(*coords, text=short_link,
-                                         fill="#E0FFFF",
-                                         activefill='#00BFFF',
-                                         anchor="w",
-                                         font='Consolas 12',
-                                         tags="link")
+                                              fill="#E0FFFF",
+                                              activefill='#00BFFF',
+                                              anchor="w",
+                                              font='Consolas 12',
+                                              tags="link")
             link_items.append((item, link))
 
         # Обработчик клика
@@ -80,22 +80,22 @@ class WebSourcesFrame(tk.Frame):
         self.ws_canvas.tag_bind("link", "<Button-1>", on_click)
 
         # добавление русских флагов первой колонки
-        for i in range(0, 18):
+        for i in range(0, 20):
             flag_x = 70
             flag_y = (i * 30) + 10
-            self.insert_country_flag(coords=(flag_x, flag_y), country='ru')
-        # добавление остальных флаговпервой колонки
-        self.insert_country_flag(coords=(70, 550), country='us')
-        self.insert_country_flag(coords=(70, 579), country='eu')
+            if i == 18 or i == 19:
+                self.insert_country_flag(coords=(flag_x, flag_y), country='eu')
+            else:
+                self.insert_country_flag(coords=(flag_x, flag_y), country='ru')
 
         # добавление флагов второй колонки 330 10
         for i in range(0, 20):
             flag_x = 330
             flag_y = (i * 30) + 10
-            if i == 3 or i == 18 or i == 19:
+            if i >= 17:
                 self.insert_country_flag(coords=(flag_x, flag_y), country='uk')
-            elif i == 10:
-                self.insert_country_flag(coords=(flag_x, flag_y), country='eu')
+            elif i >= 14 and i <= 16:
+                self.insert_country_flag(coords=(flag_x, flag_y), country='fr')
             else:
                 self.insert_country_flag(coords=(flag_x, flag_y), country='us')
 
