@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import messagebox as mb
 from tkinter import ttk
 from tkinter import filedialog
 import webbrowser as wb
@@ -7,6 +8,9 @@ import webbrowser as wb
 class MenuFrame(tk.Frame):
     def __init__(self, parent):
         super().__init__(parent)
+        #############################
+        # поменять названия на теги #
+        #############################
         menu_canvas = tk.Canvas(self, width=330, height=185, bg='#4B0082')
         monitoring_but = menu_canvas.create_text((10, 22), anchor='nw',
                                                  text=f'Мониторинг',
@@ -15,7 +19,7 @@ class MenuFrame(tk.Frame):
                                                  activefill='#00BFFF')
         menu_canvas.tag_bind(monitoring_but, "<Button-1>", lambda win='ws': goto(event=None, win='ws'))
 
-        panel = menu_canvas.create_image((120, 10), anchor='nw', image=panel_img)
+        panel = menu_canvas.create_image((120, 22), anchor='nw', image=panel_img)
         menu_canvas.tag_bind(panel, "<Button-1>", lambda win='ws': goto(event=None, win='ws'))
 
         docx_reports_compile_but = menu_canvas.create_text((10, 80), anchor='nw',
@@ -25,7 +29,7 @@ class MenuFrame(tk.Frame):
                                                            activefill='#00BFFF')
         menu_canvas.tag_bind(docx_reports_compile_but, "<Button-1>", lambda win='cr': goto(event=None, win='cr'))
 
-        report = menu_canvas.create_image((270, 67), anchor='nw', image=report_img)
+        report = menu_canvas.create_image((267, 79), anchor='nw', image=report_img)
         menu_canvas.tag_bind(report, "<Button-1>", lambda win='ws': goto(event=None, win='cr'))
 
         translate_tables_but = menu_canvas.create_text((10, 145), anchor='nw',
@@ -35,74 +39,197 @@ class MenuFrame(tk.Frame):
                                                        activefill='#00BFFF')
         menu_canvas.tag_bind(translate_tables_but, "<Button-1>", lambda win='tt': goto(event=None, win='tt'))
 
-        table = menu_canvas.create_image((257, 130), anchor='nw', image=table_img)
+        table = menu_canvas.create_image((257, 144), anchor='nw', image=table_img)
         menu_canvas.tag_bind(table, "<Button-1>", lambda win='ws': goto(event=None, win='tt'))
 
-        settings_but = menu_canvas.create_image((200, 15), anchor='nw', image=param_img)
+        settings_but = menu_canvas.create_image((306, 5), anchor='nw', image=param_img)
         menu_canvas.tag_bind(settings_but, "<Button-1>", self.open_settings_window)
+
+        info_but = menu_canvas.create_image((280, 5), anchor='nw', image=info_img)
+        menu_canvas.tag_bind(info_but, '<Button-1>', self.show_info)
 
         menu_canvas.pack()
         self.pack()
 
+    def show_info(self):
+        pass
+
     def open_settings_window(self, event):
         self.sw = tk.Toplevel(self, width=300, height=150)
+
         self.sw.resizable(False, False)
         self.sw_canvas = tk.Canvas(self.sw, width=300, height=150, bg='#4B0082')
 
         self.select_setting_lab = self.sw_canvas.create_text((10, 10),
-                                                        anchor='nw',
-                                                        text='Выберите пункт для настройки',
-                                                        fill='#E0FFFF',
-                                                        font='Consolas 10')
+                                                             anchor='nw',
+                                                             text='Выберите пункт для настройки',
+                                                             fill='#E0FFFF',
+                                                             font='Consolas 10',
+                                                             )
         settings = ['Браузер', 'Путь сохранения файлов']
         self.select_setting = ttk.Combobox(self.sw,
                                            values=settings,
                                            state='readonly',
-                                           width=25
+                                           width=25,
+                                           justify=tk.CENTER,
                                            )
         self.select_setting.place(x=10, y=30)
-        ############################################
-        # сделать обработку выбора пункта настроек #
-        # потому что при выборе браузера и другого #
-        # из selected1                             #
-        ############################################
         self.select_setting.bind('<<ComboboxSelected>>', self.selected1)
 
         self.sw_canvas.pack()
 
     def selected1(self, event):
-        if self.select_setting.get() == 'Браузер':
+        self.set_choice = self.select_setting.get()
+        self.sw_canvas.create_text((10, 53),
+                                   anchor='nw',
+                                   text='',
+                                   fill='#E0FFFF',
+                                   tags='second_annotation',
+                                   font='Consolas 10')
+        if self.set_choice == 'Браузер':
             try:
-                self.sw_canvas.coords((-100, -100), 'get_path_but')
-            except:
-                pass
+                self.sw_canvas.coords('get_path_but', (-100, -100))
+                self.sw_canvas.coords('confirm_but', (-100, -100))
+                self.sw_canvas.coords('dismiss_but', (-100, -100))
+            except Exception as e:
+                print(e)
+
+            self.sw_canvas.itemconfig('second_annotation', text='Выберите браузер')
+
             browsers = ['Opera', 'Chrome', 'Chromium', 'FireFox']
             self.select_browser = ttk.Combobox(self.sw,
                                                values=browsers,
                                                state='readonly',
+                                               width=25,
+                                               justify=tk.CENTER
                                                )
             self.select_browser.place(x=10, y=70)
             self.select_browser.bind('<<ComboboxSelected>>', self.selected_browser)
-        elif self.select_setting.get() == 'Путь сохранения файлов':
+
+        elif self.set_choice == 'Путь сохранения файлов':
             try:
                 self.select_browser.place(x=-100, y=-100)
+                self.sw_canvas.coords('get_BPath_but', (-100, -100))
+                self.sw_canvas.coords('confirm_but', (-100, -100))
+                self.sw_canvas.coords('dismiss_but', (-100, -100))
+            except Exception as e:
+                print(e)
+
+            self.sw_canvas.itemconfig('second_annotation', text='Выберите директорию')
+
+            try:
+                self.hand_ent_path.place(x=-100, y=-100)
             except:
                 pass
-            self.sw_canvas.create_text((10, 100),
+
+            self.hand_ent_path = tk.Entry(self.sw, width=27, bg='#6A5ACD', fg='#E0FFFF')
+            self.hand_ent_path.place(x=10, y=70)
+
+            self.sw_canvas.create_text((180, 72),
                                        anchor='nw',
                                        text='Обзор...',
                                        fill='lightblue',
                                        activefill='white',
                                        font='Consolas 10',
                                        tags='get_path_but')
-            self.sw_canvas.tag_bind('get_path_but', '<Button-1>', self.select_directory)
+            self.sw_canvas.tag_bind('get_path_but', '<Button-1>',
+                                    lambda t='f_path': self.select_directory(event=None, type=t))
 
-    def selected_browser(self):
-        pass
+            self.sw_canvas.create_image((245, 125), anchor='nw', image=confirm_img, tags='confirm_but')
+            self.sw_canvas.tag_bind('confirm_but', '<Button-1>', self.confirm_changes)
 
-    def select_directory(self, event):
+            self.sw_canvas.create_image((275, 125), anchor='nw', image=dismiss_img, tags='dismiss_but')
+            self.sw_canvas.tag_bind('dismiss_but', '<Button-1>', self.dismiss_changes)
+
+    def selected_browser(self, event):
+        self.browser_name = self.select_browser.get().lower()
+        print(self.browser_name)
+
+        try:
+            self.hand_ent_path.place(x=-100, y=-100)
+        except:
+            pass
+
+        self.hand_ent_path = tk.Entry(self.sw, width=27, bg='#6A5ACD', fg='#E0FFFF')
+        self.hand_ent_path.place(x=10, y=110)
+
+        self.sw_canvas.create_text((180, 112),
+                                   anchor='nw',
+                                   text='Обзор...',
+                                   fill='lightblue',
+                                   activefill='white',
+                                   font='Consolas 10',
+                                   tags='get_BPath_but')
+        self.sw_canvas.tag_bind('get_BPath_but', '<Button-1>',
+                                lambda t='b_path': self.select_directory(event=None, type=t))
+
+        self.sw_canvas.create_image((245, 125), anchor='nw', image=confirm_img, tags='confirm_but')
+        self.sw_canvas.tag_bind('confirm_but', '<Button-1>', self.confirm_changes)
+
+        self.sw_canvas.create_image((275, 125), anchor='nw', image=dismiss_img, tags='dismiss_but')
+        self.sw_canvas.tag_bind('dismiss_but', '<Button-1>', self.dismiss_changes)
+
+    def select_directory(self, event, type):
         self.directory = filedialog.askdirectory()
+        self.hand_ent_path.insert(0, self.directory)
         self.sw.lift()
+
+    def confirm_changes(self, event):
+        """
+        browser = default
+        browser_path = default
+        download_path = default
+        C:/Users/vboxuser/AppData/Local/Programs/Opera/launcher.exe
+        """
+        global browser, browser_path, download_path
+        print(browser, browser_path, download_path)
+        if self.set_choice == 'Браузер':
+            try:
+                browser = self.browser_name
+                browser_path = self.hand_ent_path.get()
+                if '\\' not in browser_path and ':/' in browser_path:
+                    wb.register(self.browser_name,
+                                None,
+                                wb.BackgroundBrowser(browser_path))
+
+                    with open('config.txt', 'w') as file:
+                        file.write('browser = ' + browser + '\nbrowser_path = ' +
+                                   browser_path + '\ndownload_path = ' + download_path)
+
+                    mb.showinfo(title='Отчет.',
+                                message=f'Параметры применены успешно!\nБраузер успешно сменен на {browser}')
+                else:
+                    mb.showwarning(title='Ошибка настройки.', message='Новые параметры не применены!\n'
+                                                                      'Проверьте путь скачивания, в нем не должно быть'
+                                                                      ' символов "\\"')
+            except Exception as e:
+                print(e)
+                mb.showwarning(title='Ошибка настройки.', message='Новые параметры не применены!')
+
+        elif self.set_choice == 'Путь сохранения файлов':
+            try:
+                download_path = self.hand_ent_path.get()
+                if '\\' not in browser_path and ':/' in browser_path:
+
+                    with open('config.txt', 'w') as file:
+                        file.write('browser = ' + browser + '\nbrowser_path = ' +
+                                   browser_path + '\ndownload_path = ' + download_path)
+
+                    mb.showinfo(title='Отчет.', message='Параметры применены успешно!\nПуть для скачивания файлов:\n'
+                    f'{download_path}')
+                else:
+                    mb.showwarning(title='Ошибка настройки.', message='Новые параметры не применены!\n'
+                                                                      'Проверьте путь скачивания, в нем не должно быть'
+                                                                      ' символов "\\"')
+            except Exception as e:
+                print(e)
+                mb.showwarning(title='Ошибка настройки.', message='Новые параметры не применены!')
+
+        else:
+            mb.showwarning(title='Ошибка настройки.', message='Новые параметры не применены!')
+
+    def dismiss_changes(self, event):
+        pass
 
 
 class WebSourcesFrame(tk.Frame):
@@ -216,15 +343,17 @@ class TranslateTablesFrame(tk.Frame):
 class MainWin:
     def __init__(self, master):
         global index, frameList
-        global panel_img, report_img, table_img, back_img, param_img, info_img
+        global panel_img, report_img, table_img, back_img, param_img, info_img, confirm_img, dismiss_img
         global ru_flag, uk_flag, us_flag, fr_flag, ge_flag, eu_flag
 
-        panel_img = tk.PhotoImage(file='images/panel48.png')
-        report_img = tk.PhotoImage(file='images/report48.png')
-        table_img = tk.PhotoImage(file='images/table48.png')
+        panel_img = tk.PhotoImage(file='images/panel.png')
+        report_img = tk.PhotoImage(file='images/report.png')
+        table_img = tk.PhotoImage(file='images/translate.png')
         back_img = tk.PhotoImage(file='images/back48.png')
         param_img = tk.PhotoImage(file='images/param.png')
         info_img = tk.PhotoImage(file='images/info.png')
+        confirm_img = tk.PhotoImage(file='images/confirm24.png')
+        dismiss_img = tk.PhotoImage(file='images/dismiss24.png')
 
         ru_flag = tk.PhotoImage(file='images/rus.png')
         uk_flag = tk.PhotoImage(file='images/uk.png')
@@ -239,7 +368,8 @@ class MainWin:
                                                   {'configure':
                                                        {'selectbackground': '#6A5ACD',
                                                         'fieldbackground': '#6A5ACD',
-                                                        'background': '#6A5ACD'
+                                                        'background': '#6A5ACD',
+                                                        'foreground': '#6A5ACD'
                                                         }}}
                                     )
         combobox_style.theme_use('combobox_style')
@@ -275,7 +405,7 @@ def goto(event, win):
 
 
 def set_config():
-    global browser, browser_path
+    global browser, browser_path, download_path
     # изначально все = default
     with open('config.txt', 'r') as file:
         config = [line.strip() for line in file.readlines()]
@@ -284,7 +414,12 @@ def set_config():
         if elem[:10] == 'browser = ':
             browser = elem[10:].strip().lower()
         elif elem[:15] == 'browser_path = ':
-            browser_path = config[1][15:].strip()
+            browser_path = elem[15:].strip()
+        elif elem[:16] == 'download_path = ':
+            download_path = elem[16:].strip()
+
+    if download_path != 'default' and download_path[-1] != '/':
+        download_path.join('/')
 
     print(browser_path, browser)
 
@@ -292,6 +427,7 @@ def set_config():
 with open('smi.txt', 'r') as file:
     # чтобы убрать \n в конце строк использую стрип
     smi_list = [line.strip() for line in file.readlines()]
+set_config()
 root = tk.Tk()
 root.resizable(False, False)
 obj = MainWin(root)
