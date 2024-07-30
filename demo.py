@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import ttk
 import webbrowser as wb
 
 
@@ -36,8 +37,49 @@ class MenuFrame(tk.Frame):
         table = menu_canvas.create_image((257, 130), anchor='nw', image=table_img)
         menu_canvas.tag_bind(table, "<Button-1>", lambda win='ws': goto(event=None, win='tt'))
 
+        settings_but = menu_canvas.create_image((200, 15), anchor='nw', image=param_img)
+        menu_canvas.tag_bind(settings_but, "<Button-1>", self.open_settings_window)
+
         menu_canvas.pack()
         self.pack()
+
+    def open_settings_window(self, event):
+        self.sw = tk.Toplevel(self, width=300, height=150)
+        self.sw.resizable(False, False)
+        sw_canvas = tk.Canvas(self.sw, width=300, height=150, bg='#4B0082')
+
+        self.select_browser_lab = sw_canvas.create_text((10, 10),
+                                                        anchor='nw',
+                                                        text='Выберите пункт для настройки',
+                                                        fill='#E0FFFF',
+                                                        font='Consolas 10')
+        settings = ['Браузер', 'Путь сохранения файлов']
+        select_browser = ttk.Combobox(self.sw,
+                                      values=settings,
+                                      state='readonly',
+                                      width=25
+                                      )
+        select_browser.place(x=10, y=30)
+        ############################################
+        # сделать обработку выбора пункта настроек #
+        # потому что при выборе браузера и другого #
+        # из selected1                             #
+        ############################################
+        select_browser.bind('<<ComboboxSelected>>', self.selected1)
+
+        sw_canvas.pack()
+
+    def selected1(self, event):
+        browsers = ['Opera', 'Chrome', 'Chromium', 'FireFox']
+        select_browser = ttk.Combobox(self.sw,
+                                      values=browsers,
+                                      state='readonly',
+                                      )
+        select_browser.place(x=10, y=70)
+        select_browser.bind('<<ComboboxSelected>>', self.selected_browser)
+
+    def selected_browser(self):
+        pass
 
 
 class WebSourcesFrame(tk.Frame):
@@ -83,7 +125,7 @@ class WebSourcesFrame(tk.Frame):
         for i in range(0, 20):
             flag_x = 70
             flag_y = (i * 30) + 10
-            if i == 18 or i == 19:
+            if (i >= 17) and (i <= 19):
                 self.insert_country_flag(coords=(flag_x, flag_y), country='eu')
             else:
                 self.insert_country_flag(coords=(flag_x, flag_y), country='ru')
@@ -94,8 +136,10 @@ class WebSourcesFrame(tk.Frame):
             flag_y = (i * 30) + 10
             if i >= 17:
                 self.insert_country_flag(coords=(flag_x, flag_y), country='uk')
-            elif i >= 14 and i <= 16:
+            elif (i >= 14) and (i <= 16):
                 self.insert_country_flag(coords=(flag_x, flag_y), country='fr')
+            elif (i >= 11) and (i <= 13):
+                self.insert_country_flag(coords=(flag_x, flag_y), country='ge')
             else:
                 self.insert_country_flag(coords=(flag_x, flag_y), country='us')
 
@@ -149,13 +193,15 @@ class TranslateTablesFrame(tk.Frame):
 class MainWin:
     def __init__(self, master):
         global index, frameList
-        global panel_img, report_img, table_img, back_img
+        global panel_img, report_img, table_img, back_img, param_img, info_img
         global ru_flag, uk_flag, us_flag, fr_flag, ge_flag, eu_flag
 
         panel_img = tk.PhotoImage(file='images/panel48.png')
         report_img = tk.PhotoImage(file='images/report48.png')
         table_img = tk.PhotoImage(file='images/table48.png')
         back_img = tk.PhotoImage(file='images/back48.png')
+        param_img = tk.PhotoImage(file='images/param.png')
+        info_img = tk.PhotoImage(file='images/info.png')
 
         ru_flag = tk.PhotoImage(file='images/rus.png')
         uk_flag = tk.PhotoImage(file='images/uk.png')
@@ -163,6 +209,17 @@ class MainWin:
         fr_flag = tk.PhotoImage(file='images/fr.png')
         ge_flag = tk.PhotoImage(file='images/ge.png')
         eu_flag = tk.PhotoImage(file='images/eu.png')
+
+        combobox_style = ttk.Style()
+        combobox_style.theme_create('combobox_style', parent='alt',
+                                    settings={'TCombobox':
+                                                  {'configure':
+                                                       {'selectbackground': '#6A5ACD',
+                                                        'fieldbackground': '#6A5ACD',
+                                                        'background': '#6A5ACD'
+                                                        }}}
+                                    )
+        combobox_style.theme_use('combobox_style')
 
         mainframe = tk.Frame(master)
         mainframe.pack()
@@ -192,6 +249,21 @@ def goto(event, win):
         index = 3
     frameList[index].tkraise()
     frameList[index].pack()
+
+
+def set_config():
+    global browser, browser_path
+    # изначально все = default
+    with open('config.txt', 'r') as file:
+        config = [line.strip() for line in file.readlines()]
+
+    for elem in config:
+        if elem[:10] == 'browser = ':
+            browser = elem[10:].strip().lower()
+        elif elem[:15] == 'browser_path = ':
+            browser_path = config[1][15:].strip()
+
+    print(browser_path, browser)
 
 
 with open('smi.txt', 'r') as file:
