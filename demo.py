@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+from tkinter import filedialog
 import webbrowser as wb
 
 
@@ -46,40 +47,62 @@ class MenuFrame(tk.Frame):
     def open_settings_window(self, event):
         self.sw = tk.Toplevel(self, width=300, height=150)
         self.sw.resizable(False, False)
-        sw_canvas = tk.Canvas(self.sw, width=300, height=150, bg='#4B0082')
+        self.sw_canvas = tk.Canvas(self.sw, width=300, height=150, bg='#4B0082')
 
-        self.select_browser_lab = sw_canvas.create_text((10, 10),
+        self.select_setting_lab = self.sw_canvas.create_text((10, 10),
                                                         anchor='nw',
                                                         text='Выберите пункт для настройки',
                                                         fill='#E0FFFF',
                                                         font='Consolas 10')
         settings = ['Браузер', 'Путь сохранения файлов']
-        select_browser = ttk.Combobox(self.sw,
-                                      values=settings,
-                                      state='readonly',
-                                      width=25
-                                      )
-        select_browser.place(x=10, y=30)
+        self.select_setting = ttk.Combobox(self.sw,
+                                           values=settings,
+                                           state='readonly',
+                                           width=25
+                                           )
+        self.select_setting.place(x=10, y=30)
         ############################################
         # сделать обработку выбора пункта настроек #
         # потому что при выборе браузера и другого #
         # из selected1                             #
         ############################################
-        select_browser.bind('<<ComboboxSelected>>', self.selected1)
+        self.select_setting.bind('<<ComboboxSelected>>', self.selected1)
 
-        sw_canvas.pack()
+        self.sw_canvas.pack()
 
     def selected1(self, event):
-        browsers = ['Opera', 'Chrome', 'Chromium', 'FireFox']
-        select_browser = ttk.Combobox(self.sw,
-                                      values=browsers,
-                                      state='readonly',
-                                      )
-        select_browser.place(x=10, y=70)
-        select_browser.bind('<<ComboboxSelected>>', self.selected_browser)
+        if self.select_setting.get() == 'Браузер':
+            try:
+                self.sw_canvas.coords((-100, -100), 'get_path_but')
+            except:
+                pass
+            browsers = ['Opera', 'Chrome', 'Chromium', 'FireFox']
+            self.select_browser = ttk.Combobox(self.sw,
+                                               values=browsers,
+                                               state='readonly',
+                                               )
+            self.select_browser.place(x=10, y=70)
+            self.select_browser.bind('<<ComboboxSelected>>', self.selected_browser)
+        elif self.select_setting.get() == 'Путь сохранения файлов':
+            try:
+                self.select_browser.place(x=-100, y=-100)
+            except:
+                pass
+            self.sw_canvas.create_text((10, 100),
+                                       anchor='nw',
+                                       text='Обзор...',
+                                       fill='lightblue',
+                                       activefill='white',
+                                       font='Consolas 10',
+                                       tags='get_path_but')
+            self.sw_canvas.tag_bind('get_path_but', '<Button-1>', self.select_directory)
 
     def selected_browser(self):
         pass
+
+    def select_directory(self, event):
+        self.directory = filedialog.askdirectory()
+        self.sw.lift()
 
 
 class WebSourcesFrame(tk.Frame):
