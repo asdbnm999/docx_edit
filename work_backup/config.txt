@@ -1,0 +1,3 @@
+browser = opera
+browser_path = C:/Users/vboxuser/AppData/Local/Programs/Opera/launcher.exe
+download_path = default
