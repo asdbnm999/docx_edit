@@ -288,85 +288,85 @@ class WebSourcesFrame(tk.Frame):
             clicked_item = self.ws_canvas.find_withtag("current")
             if clicked_item:
                 for item, link in link_items:
-                    self.search_kw = self.keyword_ent.get().strip()
-                    if self.search_kw != '':
-                        if link == 'https://russian.rt.com/' or link == 'https://regnum.ru/':
-                            link += f'search?q={self.search_kw}'
-                        elif link == 'https://rbc.ru/':
-                            link += f'search/?query={self.search_kw}'
-                        elif link == 'https://lenta.ru/' or link == 'https://vedomosti.ru/':
-                            link += f'search?query={self.search_kw}'
-                        elif link == 'https://rg.ru/' or link == 'https://iz.ru/' or link == 'https://aif.ru/' or link == 'https://tass.ru/' or link == 'https://moslenta.ru/':
-                            link += f'search?text={self.search_kw}'
-                        elif link == 'https://kommersant.ru/':
-                            link += f'search/results?search_query={self.search_kw}'
-                        elif link == 'https://gazeta.ru/':
-                            link += f'search.shtml?text={self.search_kw}&p=main&input=utf8'
-                        elif link == 'https://mk.ru/':
-                            link += f'search/?q={self.search_kw}'
-                        elif link == 'https://life.ru/':
-                            link += f'search?search={self.search_kw}'
-                        elif link == 'https://info.sibnet.ru/':
-                            link += f'articles/?text={self.search_kw}'
-                        elif link == 'https://news.yahoo.com/':
-                            self.translate_search_kw('en')
-                            link = f'https://search.yahoo.com/search?p={self.search_kw}&fr=yfp-t&fr2=p%3Afp%2Cm%3Asb&ei=UTF-8&fp=1'
-                        elif link == 'https://bloomberg.com/' or link == 'https://cnbc.com/' or link == 'https://washingtonpost.com/':
-                            self.translate_search_kw('en')
-                            link += f'search/?query={self.search_kw}'
-                        elif link == 'https://emm.newsbrief.eu/':
-                            link += f'NewsBrief/dynamic?language=ru&page=1&edition=searchresults&option=&atLeast={self.search_kw}'
-                        elif link == 'https://www.wsj.com' or link == 'https://cnn.com/':
-                            self.translate_search_kw('en')
-                            link += f'search?query={self.search_kw}'
-                        elif link == 'https://nytimes.com/':
-                            self.translate_search_kw('en')
-                            link += f'search?dropmab=false&query={self.search_kw}&sort=newest'
-                        elif link == 'https://foxnews.com/':
-                            self.translate_search_kw('en')
-                            link += f'search-results/search?q={self.search_kw}'
-                        elif link == 'https://www.npr.org/':
-                            self.translate_search_kw('en')
-                            link += f'search/?query={self.search_kw}&page=1&sortType=byDate'
-                        elif link == 'https://reuters.com/':
-                            self.translate_search_kw('en')
-                            link += f'site-search/?query={self.search_kw}'
-                        elif link == 'https://usatoday.com/' or link == 'https://reddit.com/' or link == 'https://mirror.co.uk/':
-                            self.translate_search_kw('en')
-                            link += f'search/?q={self.search_kw}'
-                        elif link == 'https://latimes.com/':
-                            self.translate_search_kw('en')
-                            link += f'search?q={self.search_kw}'
-                        elif link == 'https://www.nrc.gov/reading-rm/doc-collections/event-status/event/2024/index.html':
-                            self.translate_search_kw('en')
-                            link = 'https://www.nrc.gov/site-help/search.html?site=AllSites&searchtext={self.search_kw}'
-                        elif link == 'https://spiegel.de/':
-                            self.translate_search_kw('de')
-                            link += f'suche/?suchbegriff={self.search_kw}'
-                        elif link == 'https://tagesschau.de/':
-                            self.translate_search_kw('de')
-                            link += f'suche#/all/1/?searchText={self.search_kw}'
-                        elif link == 'https://zeit.de/':
-                            self.translate_search_kw('de')
-                            link += f'suche/index?q={self.search_kw}'
-                        elif link == 'https://lemonde.fr/':
-                            self.translate_search_kw('fr')
-                            link += f'recherche/?search_keywords={self.search_kw}&search_sort=dateCreated_desc&page=1'
-                        elif link == 'https://liberation.fr/' or link == 'https://leparisien.fr/':
-                            self.translate_search_kw('fr')
-                            link += f'recherche/?query={self.search_kw}'
-                        elif link == 'https://theguardian.com/':
-                            self.translate_search_kw('en')
-                            link = f'https://www.google.co.uk/search?as_q={self.search_kw}&as_epq=&as_oq=&as_eq=&as_nlo=&as_nhi=&lr=&cr=&as_qdr=all&as_sitesearch=www.theguardian.com&as_occt=any&as_filetype=&tbs='
-                        elif link == 'https://economist.com/':
-                            self.translate_search_kw('en')
-                            link += f'search?q={self.search_kw}&sort=date'
+                    if item == clicked_item[0]:
+                        self.search_kw = self.keyword_ent.get().strip()
+                        if self.search_kw != '':
+                            if link == 'https://russian.rt.com/' or link == 'https://regnum.ru/':
+                                link += f'search?q={self.search_kw}'
+                            elif link == 'https://rbc.ru/':
+                                link += f'search/?query={self.search_kw}'
+                            elif link == 'https://lenta.ru/' or link == 'https://vedomosti.ru/':
+                                link += f'search?query={self.search_kw}'
+                            elif link == 'https://rg.ru/' or link == 'https://iz.ru/' or link == 'https://aif.ru/' or link == 'https://tass.ru/' or link == 'https://moslenta.ru/':
+                                link += f'search?text={self.search_kw}'
+                            elif link == 'https://kommersant.ru/':
+                                link += f'search/results?search_query={self.search_kw}'
+                            elif link == 'https://gazeta.ru/':
+                                link += f'search.shtml?text={self.search_kw}&p=main&input=utf8'
+                            elif link == 'https://mk.ru/':
+                                link += f'search/?q={self.search_kw}'
+                            elif link == 'https://life.ru/':
+                                link += f'search?search={self.search_kw}'
+                            elif link == 'https://info.sibnet.ru/':
+                                link += f'articles/?text={self.search_kw}'
+                            elif link == 'https://news.yahoo.com/':
+                                self.translate_search_kw('en')
+                                link = f'https://search.yahoo.com/search?p={self.search_kw}&fr=yfp-t&fr2=p%3Afp%2Cm%3Asb&ei=UTF-8&fp=1'
+                            elif link == 'https://bloomberg.com/' or link == 'https://cnbc.com/' or link == 'https://washingtonpost.com/':
+                                self.translate_search_kw('en')
+                                link += f'search/?query={self.search_kw}'
+                            elif link == 'https://emm.newsbrief.eu/':
+                                link += f'NewsBrief/dynamic?language=ru&page=1&edition=searchresults&option=&atLeast={self.search_kw}'
+                            elif link == 'https://www.wsj.com' or link == 'https://cnn.com/':
+                                self.translate_search_kw('en')
+                                link += f'search?query={self.search_kw}'
+                            elif link == 'https://nytimes.com/':
+                                self.translate_search_kw('en')
+                                link += f'search?dropmab=false&query={self.search_kw}&sort=newest'
+                            elif link == 'https://foxnews.com/':
+                                self.translate_search_kw('en')
+                                link += f'search-results/search?q={self.search_kw}'
+                            elif link == 'https://www.npr.org/':
+                                self.translate_search_kw('en')
+                                link += f'search/?query={self.search_kw}&page=1&sortType=byDate'
+                            elif link == 'https://reuters.com/':
+                                self.translate_search_kw('en')
+                                link += f'site-search/?query={self.search_kw}'
+                            elif link == 'https://usatoday.com/' or link == 'https://reddit.com/' or link == 'https://mirror.co.uk/':
+                                self.translate_search_kw('en')
+                                link += f'search/?q={self.search_kw}'
+                            elif link == 'https://latimes.com/':
+                                self.translate_search_kw('en')
+                                link += f'search?q={self.search_kw}'
+                            elif link == 'https://www.nrc.gov/reading-rm/doc-collections/event-status/event/2024/index.html':
+                                self.translate_search_kw('en')
+                                link = 'https://www.nrc.gov/site-help/search.html?site=AllSites&searchtext={self.search_kw}'
+                            elif link == 'https://spiegel.de/':
+                                self.translate_search_kw('de')
+                                link += f'suche/?suchbegriff={self.search_kw}'
+                            elif link == 'https://tagesschau.de/':
+                                self.translate_search_kw('de')
+                                link += f'suche#/all/1/?searchText={self.search_kw}'
+                            elif link == 'https://zeit.de/':
+                                self.translate_search_kw('de')
+                                link += f'suche/index?q={self.search_kw}'
+                            elif link == 'https://lemonde.fr/':
+                                self.translate_search_kw('fr')
+                                link += f'recherche/?search_keywords={self.search_kw}&search_sort=dateCreated_desc&page=1'
+                            elif link == 'https://liberation.fr/' or link == 'https://leparisien.fr/':
+                                self.translate_search_kw('fr')
+                                link += f'recherche/?query={self.search_kw}'
+                            elif link == 'https://theguardian.com/':
+                                self.translate_search_kw('en')
+                                link = f'https://www.google.co.uk/search?as_q={self.search_kw}&as_epq=&as_oq=&as_eq=&as_nlo=&as_nhi=&lr=&cr=&as_qdr=all&as_sitesearch=www.theguardian.com&as_occt=any&as_filetype=&tbs='
+                            elif link == 'https://economist.com/':
+                                self.translate_search_kw('en')
+                                link += f'search?q={self.search_kw}&sort=date'
                         if browser == 'default':
                             wb.open_new_tab(link)
                         else:
                             wb.get(browser).open_new_tab(link)
                         break
-
         # Связывание события клика с обработчиком
         self.ws_canvas.tag_bind("link", "<Button-1>", on_click)
 
