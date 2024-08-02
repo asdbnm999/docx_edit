@@ -2,12 +2,68 @@ import requests
 import html
 import re
 from bs4 import BeautifulSoup
+from deep_translator import GoogleTranslator
 
 # URL для запроса
 url = "https://www.nrc.gov/reading-rm/doc-collections/event-status/event/2024/20240711en.html#en57208"
 
 
+states = {
+    'AL': 'Алабама',
+    'AK': 'Аляска',
+    'AZ': 'Аризона',
+    'AR': 'Арканзас',
+    'CA': 'Калифорния',
+    'CO': 'Колорадо',
+    'CT': 'Коннектикут',
+    'DE': 'Делавэр',
+    'FL': 'Флорида',
+    'GA': 'Джорджия',
+    'HI': 'Гавайи',
+    'ID': 'Айдахо',
+    'IL': 'Иллинойс',
+    'IN': 'Индьяна',
+    'IA': 'Айова',
+    'KS': 'Канзас',
+    'KY': 'Кентукки',
+    'LA': 'Луизиана',
+    'ME': 'Мэн',
+    'MD': 'Мэриленд',
+    'MA': 'Массачусетс',
+    'MI': 'Мичиган',
+    'MN': 'Миннесота',
+    'MS': 'Миссисипи',
+    'MO': 'Миссури',
+    'MT': 'Монтана',
+    'NE': 'Небраска',
+    'NV': 'Невада',
+    'NH': 'Нью-Гэмпшир',
+    'NJ': 'Нью-Джерси',
+    'NM': 'Нью-Мексико',
+    'NY': 'Нью-Йорк',
+    'NC': 'Северная Каролина',
+    'ND': 'Северная Дакота',
+    'OH': 'Огайо',
+    'OK': 'Оклахома',
+    'OR': 'Орегон',
+    'PA': 'Пенсильвания',
+    'RI': 'Род-Айленд',
+    'SC': 'Южная Каролина',
+    'SD': 'Южная Дакота',
+    'TN': 'Теннесси',
+    'TX': 'Техас',
+    'UT': 'Юта',
+    'VT': 'Вермонт',
+    'VA': 'Виргиния',
+    'WA': 'Вашингтон',
+    'WV': 'Западная Виргиния',
+    'WI': 'Висконсин',
+    'WY': 'Вайоминг'
+}
+
+
 def get_reports_list(url):
+    # Отправка HTTP-запроса
     response = requests.get(url)
 
     # Проверка успешности запроса
@@ -16,16 +72,29 @@ def get_reports_list(url):
         html_content = response.text
         # получаю элементы с отчетом, в начале каждого отчета идет <div class="border">, поэтому делаю первый сплит
         # сразу же убираю первый элемент сплита, потому что он не содержит отчет
+        content1 = html_content.split('<div class="event-summary number text-center">')[1].split('<a href="#')[1:]
+        content1_1 = content1[-1].split('</div>')[:1]
+        content1[-1] = content1_1[0]
+        ids = list()
+        for elem in content1:
+            ids.append(elem[:7])
+
         content2 = html_content.split('<div class="border">')[1:]
         # через цикл отделяю отчет от мусора, через сплит, потому что каждый отчет заканчивается на </div>
-        reports = list()
+        reports_eng = list()
 
         for elem in content2:
-            reports.append(re.sub(r'<[^>]+>', '', html.unescape(elem.split('</div>')[0])))
+            reports_eng.append(re.sub(r'<[^>]+>', '', html.unescape(elem.split('</div>')[0])))
 
-        return reports
+        reports_rus = list()
+        for report in reports_eng:
+            translated_report = GoogleTranslator(source='en', target='ru').translate(report)
+            reports_rus.append(translated_report)
+
+        return dict(zip(ids, reports_rus))
+
     else:
-        print('error')
+        print(f"Ошибка при загрузке страницы: {response.status_code}")
 
 
 def get_reports_info(url):
@@ -76,8 +145,12 @@ def get_reports_info(url):
         # Обрабатываем случаи недостающих значений
         if len(city) > 20:
             city = ''
+        else:
+            city = GoogleTranslator(source='en', target='ru').translate(city)
         if len(state) > 20:
             state = ''
+        else:
+            state = states[state]
 
         # Создаем словарь и добавляем в результат
         result.append({
@@ -91,5 +164,16 @@ def get_reports_info(url):
     return result
 
 
-print(get_reports_list(url))
-print(get_reports_info(url))
+result_dict = {}
+
+for item in get_reports_info(url):
+    id_value = item["id"]
+    if id_value in get_reports_list(url):
+        result_dict[id_value] = [
+            item["state"],
+            item["city"],
+            item["notif date"],
+            get_reports_list(url)[id_value]
+        ]
+
+print(result_dict)
