@@ -8,7 +8,10 @@ from docx import Document
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Pt, Inches, Cm
-
+from create_single_rep_docx import create_single_rep_docx
+#####################################################################
+# переформировать в create_single_rep_docx две функции в один класс #
+#####################################################################
 
 class MenuFrame(tk.Frame):
     def __init__(self, parent):
@@ -432,126 +435,105 @@ class WebSourcesFrame(tk.Frame):
 
 class CompileReportsFrame(tk.Frame):
     def __init__(self, parent):
+        """
+        отредактировать форму окна
+        """
         super().__init__(parent)
         self.cr_canvas = tk.Canvas(self, width=800, height=600, bg='#6A5ACD')
         self.cr_canvas.create_image((10, 10), anchor='nw', image=back_img, tags='back_but')
         self.cr_canvas.tag_bind('back_but', '<Button-1>', lambda win='menu': goto(event=None, win='menu'))
         self.cr_canvas.pack()
         self.cr_canvas.create_text((50, 10), anchor='nw', text='Отчёты nrc.gov', tags='nrc_reps')
-        self.cr_canvas.create_text((50, 30), anchor='nw', text='Отчёты rbc.ru', tags='rbc_reps')
-        self.cr_canvas.create_text((50, 10), anchor='nw', text='Универсальная форма отчёта', tags='universal_reps')
+        self.cr_canvas.create_text((50, 40), anchor='nw', text='Отчёты rbc.ru', tags='rbc_reps')
+        self.cr_canvas.create_text((50, 70), anchor='nw', text='Универсальная форма отчёта', tags='universal_reps')
+        self.cr_canvas.tag_bind('nrc_reps', '<Button-1>', lambda win='menu': goto(event=None, win='nrc'))
+        self.cr_canvas.tag_bind('rbc_reps', '<Button-1>', lambda win='menu': goto(event=None, win='rbc'))
+        self.cr_canvas.tag_bind('universal_reps', '<Button-1>', lambda win='menu': goto(event=None, win='uni_rep'))
         self.pack()
 
-    def compile_report(self):
-        def set_cell_border(cell, **kwargs):
-            """
-            изменяет параметры таблицы,
-            использование:
 
-            set_cell_border(
-                cell,
-                top={"sz": 12, "val": "single", "color": "#FF0000", "space": "0"},
-                bottom={"sz": 12, "color": "#00FF00", "val": "single"},
-                start={"sz": 24, "val": "dashed", "shadow": "true"},
-                end={"sz": 12, "val": "dashed"},
-            )
-            """
-            tc = cell._tc
-            tcPr = tc.get_or_add_tcPr()
+class NrcReportsFrame(tk.Frame):
+    def __init__(self, parent):
+        super().__init__(parent)
+        """
+        Отредактировать размер страницы
+        """
+        self.tt_canvas = tk.Canvas(self, width=800, height=600, bg='#6A5ACD')
+        self.tt_canvas.create_image((10, 10), anchor='nw', image=back_img, tags='back_but')
+        self.tt_canvas.tag_bind('back_but', '<Button-1>', lambda win='menu': goto(event=None, win='cr'))
+        self.tt_canvas.create_text((50, 10), anchor='nw', text='Компиляция по ссылке на отчет', tags='nrc_single_rep')
+        self.tt_canvas.create_text((50, 40), anchor='nw', text='Компиляция по ссылке на страницу', tags='nrc_multi_rep')
+        self.tt_canvas.create_text((50, 70), anchor='nw', text='Сегодняшние отчеты', tags='nrc_daily_reps')
+        self.tt_canvas.tag_bind('nrc_single_rep', '<Button-1>', lambda win='menu': goto(event=None, win='nrc_single_rep_win'))
+        self.tt_canvas.tag_bind('nrc_multi_rep', '<Button-1>', lambda win='menu': goto(event=None, win='nrc_multi_rep_win'))
+        self.tt_canvas.tag_bind('nrc_daily_reps', '<Button-1>', lambda win='menu': goto(event=None, win='nrc_daily_reps_win'))
+        self.tt_canvas.pack()
+        self.pack()
 
-            # check for tag existnace, if none found, then create one
-            tcBorders = tcPr.first_child_found_in("w:tcBorders")
-            if tcBorders is None:
-                tcBorders = OxmlElement('w:tcBorders')
-                tcPr.append(tcBorders)
 
-            # list over all available tags
-            for edge in ('start', 'top', 'end', 'bottom', 'insideH', 'insideV'):
-                edge_data = kwargs.get(edge)
-                if edge_data:
-                    tag = 'w:{}'.format(edge)
+class NrcSingleReportFrame(tk.Frame):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.tt_canvas = tk.Canvas(self, width=800, height=600, bg='#6A5ACD')
+        self.tt_canvas.create_image((10, 10), anchor='nw', image=back_img, tags='back_but')
+        self.tt_canvas.tag_bind('back_but', '<Button-1>', lambda win='menu': goto(event=None, win='nrc'))
+        self.tt_canvas.create_text((50, 10), anchor='nw', text='Ссылка https://.../...en.html#en...')
+        self.report_link_ent = tk.Entry(self, width=95, bg='#6A5ACD', fg='#E0FFFF', font='Consolas 10')
+        self.report_link_ent.place(x=50, y=40)
+        self.tt_canvas.create_text((50, 70), anchor='nw', text='Создать отчет', tags='nrc_single_rep_create')
+        self.tt_canvas.tag_bind('nrc_single_rep_create', '<Button-1>', self.create_doc)
+        self.tt_canvas.pack()
+        self.pack()
 
-                    # check for tag existnace, if none found, then create one
-                    element = tcBorders.find(qn(tag))
-                    if element is None:
-                        element = OxmlElement(tag)
-                        tcBorders.append(element)
+    def create_doc(self, event=None):
+        url = self.report_link_ent.get()
+        if url == '':
+            mb.showwarning(title='Ошибка!', message='Заполните поле для ссылки')
+        elif 'https://www.nrc.gov/reading-rm/doc-collections/event-status/event/2024/' in url:
+            pass
+        else:
+             mb.showwarning(title='Ошибка!', message='Ссылка должна содержать:\n '
+                            'https://www.nrc.gov/reading-rm/doc-collections/event-status/event/2024/')
 
-                    # looks like order of attributes is important
-                    for key in ["sz", "val", "color", "space", "shadow"]:
-                        if key in edge_data:
-                            element.set(qn('w:{}'.format(key)), str(edge_data[key]))
 
-        document = Document()
+class NrcMultiReportsFrame(tk.Frame):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.tt_canvas = tk.Canvas(self, width=800, height=600, bg='#6A5ACD')
+        self.tt_canvas.create_image((10, 10), anchor='nw', image=back_img, tags='back_but')
+        self.tt_canvas.tag_bind('back_but', '<Button-1>', lambda win='menu': goto(event=None, win='nrc'))
+        self.tt_canvas.pack()
+        self.pack()
 
-        # отредактировал отступы от краев листа
-        sections = document.sections
-        for section in sections:
-            section.top_margin = Cm(2.0)
-            section.bottom_margin = Cm(2.0)
-            section.left_margin = Cm(2.5)
-            section.right_margin = Cm(1.0)
 
-        # создал таблицу 3х2
-        sdl_table = document.add_table(rows=3, cols=2)
+class NrcDailyReportsFrame(tk.Frame):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.tt_canvas = tk.Canvas(self, width=800, height=600, bg='#6A5ACD')
+        self.tt_canvas.create_image((10, 10), anchor='nw', image=back_img, tags='back_but')
+        self.tt_canvas.tag_bind('back_but', '<Button-1>', lambda win='menu': goto(event=None, win='nrc'))
+        self.tt_canvas.pack()
+        self.pack()
 
-        # отредактировал ширину колонок
-        column0 = sdl_table.columns[0]
-        column0.width = Inches(2.1)
-        # мб будет проще счетчика, если получится через for перебрать все раны параграфов
-        # в первом столбе
-        column1 = sdl_table.columns[1]
-        column1.width = Inches(5)
 
-        # заполнение ячеек
-        cell0 = sdl_table.cell(row_idx=0, col_idx=0).text = "Источник:"
-        cell1 = sdl_table.cell(row_idx=0, col_idx=1).text = "«nrc.gov»"
-        cell2 = sdl_table.cell(row_idx=1, col_idx=0).text = "Опубликовано:"
-        cell3 = sdl_table.cell(row_idx=1, col_idx=1).text = "03.07.2024"
-        cell4 = sdl_table.cell(row_idx=2, col_idx=0).text = "Ссылка на источник:"
-        cell5 = sdl_table.cell(row_idx=2,
-                               col_idx=1).text = "https://www.nrc.gov/reading-rm/doc-collections/event-status/event/2024/20240711en.html#en57208"
+class RbcReportsFrame(tk.Frame):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.tt_canvas = tk.Canvas(self, width=800, height=600, bg='#6A5ACD')
+        self.tt_canvas.create_image((10, 10), anchor='nw', image=back_img, tags='back_but')
+        self.tt_canvas.tag_bind('back_but', '<Button-1>', lambda win='menu': goto(event=None, win='cr'))
+        self.tt_canvas.pack()
+        self.pack()
 
-        # обнуление обводки, смена шрифта, размера шрифта + bold
-        # тут счетчик, самая простая реализация выделения первого столбца
-        counter = 0
-        for row in sdl_table.rows:
-            for cell in row.cells:
-                cell.paragraphs[0].add_run('')
-                rc = cell.paragraphs[0].runs[0]
-                rc.font.size = Pt(14)
-                rc.font.name = 'TimesNewRoman'
-                if counter == 0:
-                    rc.font.bold = True
-                    rc.font.underline = True
-                    counter += 1
-                else:
-                    counter = 0
-                set_cell_border(
-                    cell,
-                    top={"sz": 0},
-                    bottom={"sz": 0},
-                    start={"sz": 0},
-                    end={"sz": 0},
-                )
 
-        document.add_paragraph()
-        art_header = document.add_paragraph('')
-        art_header.paragraph_format.first_line_indent = Inches(0.5)
-        art_header.add_run(
-            'В США, штат Миссури, город Осейдж-Бич был поврежден плотномер, содержащий цезий-137 и амерций-241')
-        art_header.runs[0].font.name = 'TimesNewRoman'
-        art_header.runs[0].font.size = Pt(14)
-        art_header.runs[0].font.bold = True
-
-        article = document.add_paragraph('')
-        article.paragraph_format.first_line_indent = Inches(0.5)
-        article.add_run(
-            'В 11:46 CDT 7/3/2024 сотрудник по радиационной безопасности в Midwest Subsurface Testing сообщил, что на строительной площадке был поврежден датчик. Датчик плотности влаги InstroTek MC1 Elite, содержащий 10 милликюри цезия-137 и 50 милликюри америция-241/бериллия, был опрокинут погрузчиком. Источник застрял в экранированном положении. Было проведено радиологическое обследование, которое подтвердило отсутствие загрязнения. Поврежденный датчик был извлечен и доставлен на предприятие поставщика для проведения испытания на герметичность.\nЭто событие было сообщено в соответствии с 10 CFR 30.50 (b)(2).')
-        article.runs[0].font.name = 'TimesNewRoman'
-        article.runs[0].font.size = Pt(14)
-
-        document.save('demo.docx')
+class UniversalReportsFrame(tk.Frame):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.tt_canvas = tk.Canvas(self, width=800, height=600, bg='#6A5ACD')
+        self.tt_canvas.create_image((10, 10), anchor='nw', image=back_img, tags='back_but')
+        self.tt_canvas.tag_bind('back_but', '<Button-1>', lambda win='menu': goto(event=None, win='cr'))
+        self.tt_canvas.pack()
+        self.pack()
 
 
 class TranslateTablesFrame(tk.Frame):
@@ -607,7 +589,9 @@ class MainWin:
 
         index = 0
         frameList = [MenuFrame(mainframe), WebSourcesFrame(mainframe), CompileReportsFrame(mainframe),
-                     TranslateTablesFrame(mainframe)]
+                     TranslateTablesFrame(mainframe), NrcReportsFrame(mainframe), RbcReportsFrame(mainframe),
+                    UniversalReportsFrame(mainframe), NrcSingleReportFrame(mainframe), 
+                     NrcMultiReportsFrame(mainframe), NrcDailyReportsFrame(mainframe)]
         for frame in frameList[1:]:
             frame.forget()
 
@@ -623,6 +607,18 @@ def goto(event, win):
         index = 2
     elif win == 'tt':
         index = 3
+    elif win == 'nrc':
+        index = 4
+    elif win == 'rbc':
+        index = 5
+    elif win == 'uni_rep':
+        index = 6
+    elif win == 'nrc_single_rep_win':
+        index = 7
+    elif win == 'nrc_multi_rep_win':
+        index = 8
+    elif win == 'nrc_daily_reps_win':
+        index = 9
     frameList[index].tkraise()
     frameList[index].pack()
 
