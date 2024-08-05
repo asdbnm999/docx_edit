@@ -437,6 +437,9 @@ class CompileReportsFrame(tk.Frame):
         self.cr_canvas.create_image((10, 10), anchor='nw', image=back_img, tags='back_but')
         self.cr_canvas.tag_bind('back_but', '<Button-1>', lambda win='menu': goto(event=None, win='menu'))
         self.cr_canvas.pack()
+        self.cr_canvas.create_text((50, 10), anchor='nw', text='Отчёты nrc.gov', tags='nrc_reps')
+        self.cr_canvas.create_text((50, 30), anchor='nw', text='Отчёты rbc.ru', tags='rbc_reps')
+        self.cr_canvas.create_text((50, 10), anchor='nw', text='Универсальная форма отчёта', tags='universal_reps')
         self.pack()
 
     def compile_report(self):
