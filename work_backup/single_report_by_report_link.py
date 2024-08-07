@@ -1,29 +1,14 @@
 """
-СДЕЛАТЬ ВЫРАВНИВАНИЕ
-p=row[0].add_paragraph('left justified text')
-p.alignment=WD_ALIGN_PARAGRAPH.CENTER
 
-СДЕЛАТЬ КОЛОНТИТУЛ
-# Создаем новый документ
-doc = Document()
-
-# Добавляем колонтитул
-section = doc.sections[0]
-header = section.header
-
-# Добавляем параграф в колонтитул
-p = header.add_paragraph("Это текст в колонтитуле")
-
-# Сохраняем документ
-doc.save("document_with_header.docx")
 """
 import requests
 import pprint
 import html
 import re
-from deep_translator import GoogleTranslator
+import random
 import g4f
 import time
+from deep_translator import GoogleTranslator
 from docx import Document
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
@@ -33,16 +18,25 @@ from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 
 class SingleRepDocx:
     def __init__(self, url):
+        """
+        Инициализация документа
+        """
+        self.rep_dict = self.create_reports_dict(url)
         document = Document()
 
-        sections = document.sections
+        section = self.document.sections[0]
+        header = section.header
+        p = header.add_paragraph("Приложение №2")
+        p.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT
+
+        sections = self.document.sections
         for section in sections:
             section.top_margin = Cm(2.0)
             section.bottom_margin = Cm(2.0)
             section.left_margin = Cm(2.5)
             section.right_margin = Cm(1.0)
 
-        sdl_table = document.add_table(rows=3, cols=2)
+        sdl_table = self.document.add_table(rows=3, cols=2)
 
         column0 = sdl_table.columns[0]
         column0.width = Inches(2.1)
@@ -52,7 +46,7 @@ class SingleRepDocx:
         cell0 = sdl_table.cell(row_idx=0, col_idx=0).text = "Источник:"
         cell1 = sdl_table.cell(row_idx=0, col_idx=1).text = "«nrc.gov»"
         cell2 = sdl_table.cell(row_idx=1, col_idx=0).text = "Опубликовано:"
-        cell3 = sdl_table.cell(row_idx=1, col_idx=1).text = list(rep_dict.values())[0][0]
+        cell3 = sdl_table.cell(row_idx=1, col_idx=1).text = list(self.rep_dict.values())[0][0]
         cell4 = sdl_table.cell(row_idx=2, col_idx=0).text = "Ссылка на источник:"
         cell5 = sdl_table.cell(row_idx=2, col_idx=1).text = url
 
@@ -71,7 +65,7 @@ class SingleRepDocx:
                     counter += 1
                 else:
                     counter = 0
-                set_cell_border(
+                self.set_cell_border(
                     cell,
                     top={"sz": 0},
                     bottom={"sz": 0},
@@ -79,23 +73,55 @@ class SingleRepDocx:
                     end={"sz": 0},
                 )
 
-        document.add_paragraph()
-        art_header = document.add_paragraph('')
+    def save_doc(self):
+        """
+        Сохранение документа
+        """
+        art_header = self.document.add_paragraph('')
         art_header.paragraph_format.first_line_indent = Cm(1.25)
-        art_header.add_run(list(rep_dict.values())[0][1])
+        art_header.paragraph_format.line_spacing = 1.15
+        self.art_header_text = list(self.rep_dict.values())[0][1]
+        art_header.add_run(self.art_header)
         art_header.runs[0].font.name = 'TimesNewRoman'
         art_header.runs[0].font.size = Pt(14)
         art_header.runs[0].font.bold = True
+        art_header.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
 
-        article = document.add_paragraph('')
+        article = self.document.add_paragraph('')
         article.paragraph_format.first_line_indent = Cm(1.25)
-        article.add_run(list(rep_dict.values())[0][2])
+        article.paragraph_format.line_spacing = 1.15
+        article.add_run(list(self.rep_dict.values())[0][2])
         article.runs[0].font.name = 'TimesNewRoman'
         article.runs[0].font.size = Pt(14)
+        article.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY # ИЛИ DISTRIBUTE
 
-    # document.save('demo.docx')
+        self.document.save('demo.docx')
 
-    def set_cell_border(cell, **kwargs):
+    def show_header(self):
+        """
+        демонстрирование текста
+        крепится к canvas.item_config
+        """
+        return list(self.rep_dict.values())[0][1]
+
+    def change_header(self):
+        """
+        изменение заголовка
+        меняется элемент словаря, после чего возвращается егозначение
+        крепится к canvas.item_config
+        """
+        ai_list = [g4f.models.gpt_4o, g4f.models.gemeni_pro, g4f.models.claude_3_haiku]
+        ai_model = random.choice(ai_list)
+
+        list(self.rep_dict.values())[0][1] = g4f.ChatCompletion.create(
+            model = ai_model,
+            messages=[{'role': 'user',
+                           'content': f'не отвечай ничего лишнего, дай мне краткое содержание текста можно использовать до 15 слов без слов "отчет", "текст": {report}'}]
+            )
+
+        self.show_header()
+
+    def set_cell_border(self, cell, **kwargs):
         """
         set_cell_border(
             cell,
@@ -132,7 +158,7 @@ class SingleRepDocx:
                         element.set(qn('w:{}'.format(key)), str(edge_data[key]))
 
     
-    def create_reports_dict(self.url: str) -> dict[str, list[str]] | str:
+    def create_reports_dict(self, url: str) -> dict[str, list[str]] | str:
 
         def create_header(report: str) -> str:
             response = g4f.ChatCompletion.create(
