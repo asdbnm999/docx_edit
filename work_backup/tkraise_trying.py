@@ -1,17 +1,21 @@
+"""
+СДЕЛАТЬ СОХРАНЕНИЕ ДокИКС ДОКУМЕНТОВ НОРМАЛЬНО, ЧТОБЫ ОН НЕ ПЕРЕЗАПИСЫВАЛСЯ, А ДЕЛЕЛАСЯ НОВЫЙ
+"""
+import time
 import tkinter as tk
 from tkinter import messagebox as mb
 from tkinter import ttk
 from tkinter import filedialog
+from PIL import Image
 import webbrowser as wb
 from deep_translator import GoogleTranslator
 from docx import Document
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Pt, Inches, Cm
-from create_single_rep_docx import create_single_rep_docx
-#####################################################################
-# переформировать в create_single_rep_docx две функции в один класс #
-#####################################################################
+from single_report_by_report_link import SingleRepDocx
+from threading import Thread
+
 
 class MenuFrame(tk.Frame):
     def __init__(self, parent):
@@ -242,7 +246,7 @@ class MenuFrame(tk.Frame):
                                    browser_path + '\ndownload_path = ' + download_path)
 
                     mb.showinfo(title='Отчет.', message='Параметры применены успешно!\nПуть для скачивания файлов:\n'
-                    f'{download_path}')
+                                                        f'{download_path}')
                 else:
                     mb.showwarning(title='Ошибка настройки.', message='Новые параметры не применены!\n'
                                                                       'Проверьте путь скачивания, в нем не должно быть'
@@ -370,6 +374,7 @@ class WebSourcesFrame(tk.Frame):
                         else:
                             wb.get(browser).open_new_tab(link)
                         break
+
         # Связывание события клика с обработчиком
         self.ws_canvas.tag_bind("link", "<Button-1>", on_click)
 
@@ -443,9 +448,27 @@ class CompileReportsFrame(tk.Frame):
         self.cr_canvas.create_image((10, 10), anchor='nw', image=back_img, tags='back_but')
         self.cr_canvas.tag_bind('back_but', '<Button-1>', lambda win='menu': goto(event=None, win='menu'))
         self.cr_canvas.pack()
-        self.cr_canvas.create_text((50, 10), anchor='nw', text='Отчёты nrc.gov', tags='nrc_reps')
-        self.cr_canvas.create_text((50, 40), anchor='nw', text='Отчёты rbc.ru', tags='rbc_reps')
-        self.cr_canvas.create_text((50, 70), anchor='nw', text='Универсальная форма отчёта', tags='universal_reps')
+        self.cr_canvas.create_text((50, 10),
+                                   anchor='nw',
+                                   text='Отчёты nrc.gov',
+                                   tags='nrc_reps',
+                                   font='Consolas 14',
+                                   fill='#E0FFFF',
+                                   activefill='#00BFFF')
+        self.cr_canvas.create_text((50, 50),
+                                   anchor='nw',
+                                   text='Отчёты rbc.ru',
+                                   tags='rbc_reps',
+                                   font='Consolas 14',
+                                   fill='#E0FFFF',
+                                   activefill='#00BFFF')
+        self.cr_canvas.create_text((50, 90),
+                                   anchor='nw',
+                                   text='Универсальная форма отчёта',
+                                   tags='universal_reps',
+                                   font='Consolas 14',
+                                   fill='#E0FFFF',
+                                   activefill='#00BFFF')
         self.cr_canvas.tag_bind('nrc_reps', '<Button-1>', lambda win='menu': goto(event=None, win='nrc'))
         self.cr_canvas.tag_bind('rbc_reps', '<Button-1>', lambda win='menu': goto(event=None, win='rbc'))
         self.cr_canvas.tag_bind('universal_reps', '<Button-1>', lambda win='menu': goto(event=None, win='uni_rep'))
@@ -464,9 +487,12 @@ class NrcReportsFrame(tk.Frame):
         self.tt_canvas.create_text((50, 10), anchor='nw', text='Компиляция по ссылке на отчет', tags='nrc_single_rep')
         self.tt_canvas.create_text((50, 40), anchor='nw', text='Компиляция по ссылке на страницу', tags='nrc_multi_rep')
         self.tt_canvas.create_text((50, 70), anchor='nw', text='Сегодняшние отчеты', tags='nrc_daily_reps')
-        self.tt_canvas.tag_bind('nrc_single_rep', '<Button-1>', lambda win='menu': goto(event=None, win='nrc_single_rep_win'))
-        self.tt_canvas.tag_bind('nrc_multi_rep', '<Button-1>', lambda win='menu': goto(event=None, win='nrc_multi_rep_win'))
-        self.tt_canvas.tag_bind('nrc_daily_reps', '<Button-1>', lambda win='menu': goto(event=None, win='nrc_daily_reps_win'))
+        self.tt_canvas.tag_bind('nrc_single_rep', '<Button-1>',
+                                lambda win='menu': goto(event=None, win='nrc_single_rep_win'))
+        self.tt_canvas.tag_bind('nrc_multi_rep', '<Button-1>',
+                                lambda win='menu': goto(event=None, win='nrc_multi_rep_win'))
+        self.tt_canvas.tag_bind('nrc_daily_reps', '<Button-1>',
+                                lambda win='menu': goto(event=None, win='nrc_daily_reps_win'))
         self.tt_canvas.pack()
         self.pack()
 
@@ -474,26 +500,129 @@ class NrcReportsFrame(tk.Frame):
 class NrcSingleReportFrame(tk.Frame):
     def __init__(self, parent):
         super().__init__(parent)
-        self.tt_canvas = tk.Canvas(self, width=800, height=600, bg='#6A5ACD')
-        self.tt_canvas.create_image((10, 10), anchor='nw', image=back_img, tags='back_but')
-        self.tt_canvas.tag_bind('back_but', '<Button-1>', lambda win='menu': goto(event=None, win='nrc'))
-        self.tt_canvas.create_text((50, 10), anchor='nw', text='Ссылка https://.../...en.html#en...')
+        self.nrcs_canvas = tk.Canvas(self, width=800, height=600, bg='#6A5ACD')
+        self.nrcs_canvas.create_image((-100, -100), anchor='nw', image=wait_logo_im[0], tags='wait_logo')
+        self.nrcs_canvas.create_text((-100, -100),
+                                     anchor='nw',
+                                     text='Скачать отчет',
+                                     tags='nrc_single_rep_save',
+                                     font='Consolas 14',
+                                     fill='#E0FFFF',
+                                     activefill='#00BFFF')
+        self.nrcs_canvas.tag_bind('nrc_single_rep_save', '<Button-1>',  self.save_docx_by_path)
+        self.nrcs_canvas.create_image((10, 10), anchor='nw', image=back_img, tags='back_but')
+        self.nrcs_canvas.tag_bind('back_but', '<Button-1>', lambda win='menu': goto(event=None, win='nrc'))
+        self.nrcs_canvas.create_text((50, 10),
+                                     anchor='nw',
+                                     text='Ссылка https://.../...en.html#en...',
+                                     font='Consolas 14',
+                                     fill='#E0FFFF')
         self.report_link_ent = tk.Entry(self, width=95, bg='#6A5ACD', fg='#E0FFFF', font='Consolas 10')
         self.report_link_ent.place(x=50, y=40)
-        self.tt_canvas.create_text((50, 70), anchor='nw', text='Создать отчет', tags='nrc_single_rep_create')
-        self.tt_canvas.tag_bind('nrc_single_rep_create', '<Button-1>', self.create_doc)
-        self.tt_canvas.pack()
+        self.nrcs_canvas.create_text((50, 70),
+                                     anchor='nw',
+                                     text='Создать отчет',
+                                     tags='nrc_single_rep_create',
+                                     font='Consolas 14',
+                                     fill='#E0FFFF',
+                                     activefill='#00BFFF')
+        self.nrcs_canvas.tag_bind('nrc_single_rep_create', '<Button-1>', self.create_doc)
+        self.nrcs_canvas.create_text((50, 100),
+                                     anchor='nw',
+                                     text='',
+                                     tags='nrc_single_rep_header',
+                                     font='Consolas 14',
+                                     fill='#E0FFFF')
+        self.nrcs_canvas.pack()
         self.pack()
+        self.creating_rep_processing = False
 
     def create_doc(self, event=None):
-        url = self.report_link_ent.get()
-        if url == '':
-            mb.showwarning(title='Ошибка!', message='Заполните поле для ссылки')
-        elif 'https://www.nrc.gov/reading-rm/doc-collections/event-status/event/2024/' in url:
-            pass
+
+        if not self.creating_rep_processing:
+            self.nrcs_canvas.coords('nrc_single_rep_save', (-100, -100))
+            url = self.report_link_ent.get()
+            if url == '':
+                mb.showwarning(title='Ошибка!', message='Заполните поле для ссылки')
+            elif 'https://www.nrc.gov/reading-rm/doc-collections/event-status/event/2024/' in url:
+                self.nrcs_canvas.itemconfigure('nrc_single_rep_header', text='')
+                parsing_process = Thread(target=self.parsing, args=(url,), daemon=True)
+                parsing_process.start()
+
+            else:
+                mb.showwarning(title='Ошибка!', message='Ссылка должна содержать:\n '
+                                                        'https://www.nrc.gov/reading-rm/doc-collections/event-status'
+                                                        '/event/2024/')
         else:
-             mb.showwarning(title='Ошибка!', message='Ссылка должна содержать:\n '
-                            'https://www.nrc.gov/reading-rm/doc-collections/event-status/event/2024/')
+            mb.showwarning(title='Ошибка!', message='Составление отчета уже запущено!')
+
+    def parsing(self, url, event=None):
+        self.creating_rep_processing = True
+        self.precompile_report = False
+
+        def wait():
+            global wait_logo_im
+            self.nrcs_canvas.coords('wait_logo', (360, 100))
+            i = 0
+            while not self.precompile_report:
+                self.nrcs_canvas.itemconfigure('wait_logo', image=wait_logo_im[i])
+                if i == 11:
+                    i = 0
+
+                else:
+                    i += 1
+
+                time.sleep(0.001)
+
+        def get_precompile_report():
+            self.precompile_report = SingleRepDocx(url)
+
+        get_precompile_report_proc = Thread(target=get_precompile_report, daemon=True)
+        get_precompile_report_proc.start()
+        wait_proc = Thread(target=wait, daemon=True)
+        wait_proc.start()
+        while True:
+            try:
+                if self.precompile_report.show_header():
+                    header_text = self.precompile_report.show_header()
+                    header_arr = list()
+
+                    for i in range(len(header_text)):
+                        if i < 60:
+                            header_arr.append(header_text[i])
+                            print(header_arr)
+                        if i >= 60:
+                            if header_text[i] == ' ' and '\n' not in header_arr:
+                                header_arr.append('\n')
+                            else:
+                                header_arr.append(header_text[i])
+
+                    self.header = ''.join(header_arr)
+                    print(self.header)
+                    if self.header == 'Error: HTTP 404: Not Found':
+                        time.sleep(1)
+                        self.parsing(url, event=None)
+
+                    self.nrcs_canvas.coords('wait_logo', (-200, -200))
+                    self.nrcs_canvas.itemconfigure('nrc_single_rep_header', text=self.header)
+                    self.nrcs_canvas.coords('nrc_single_rep_save', (585, 70))
+                    self.creating_rep_processing = False
+                    break
+                else:
+                    time.sleep(2)
+
+            except:
+                pass
+
+    def save_docx_by_path(self, event=None):
+        try:
+            self.precompile_report.save_doc(download_path)
+            mb.showinfo(title='Успех!', message='Документ сохранен по указанному в конфигурации пути')
+            self.report_link_ent.delete(0, tk.END)
+            self.nrcs_canvas.coords('nrc_single_rep_save', (-100, -100))
+            self.nrcs_canvas.itemconfigure('nrc_single_rep_header', text='')
+        except:
+            mb.showwarning(title='Ошибка!', message='Документ не сохранен!')
 
 
 class NrcMultiReportsFrame(tk.Frame):
@@ -550,7 +679,7 @@ class MainWin:
     def __init__(self, master):
         global index, frameList
         global panel_img, report_img, table_img, back_img, param_img, info_img, confirm_img, dismiss_img, restore_img
-        global restore_kw_img, restore_kw_gif, save_kw_img
+        global restore_kw_img, restore_kw_gif, save_kw_img, wait_logo_im
         global ru_flag, uk_flag, us_flag, fr_flag, ge_flag, eu_flag
 
         panel_img = tk.PhotoImage(file='images/panel.png')
@@ -564,6 +693,11 @@ class MainWin:
         restore_img = tk.PhotoImage(file='images/restore.png')
         restore_kw_img = tk.PhotoImage(file='images/restore_kw.png')
         save_kw_img = tk.PhotoImage(file='images/save_kw.png')
+        wait_logo = Image.open('images/wait_gif.gif')
+        wait_frames = wait_logo.n_frames
+        print(wait_frames)
+        wait_logo_im = [tk.PhotoImage(file='images/wait_gif.gif',
+                                      format=f'gif -index {i}') for i in range(wait_frames)]
 
         ru_flag = tk.PhotoImage(file='images/rus.png')
         uk_flag = tk.PhotoImage(file='images/uk.png')
@@ -590,7 +724,7 @@ class MainWin:
         index = 0
         frameList = [MenuFrame(mainframe), WebSourcesFrame(mainframe), CompileReportsFrame(mainframe),
                      TranslateTablesFrame(mainframe), NrcReportsFrame(mainframe), RbcReportsFrame(mainframe),
-                    UniversalReportsFrame(mainframe), NrcSingleReportFrame(mainframe), 
+                     UniversalReportsFrame(mainframe), NrcSingleReportFrame(mainframe),
                      NrcMultiReportsFrame(mainframe), NrcDailyReportsFrame(mainframe)]
         for frame in frameList[1:]:
             frame.forget()
@@ -639,6 +773,8 @@ def set_config():
 
     if download_path != 'default' and download_path[-1] != '/':
         download_path.join('/')
+    elif download_path == 'default':
+        download_path = ''
 
     print(browser_path, browser)
     if browser != 'default':
