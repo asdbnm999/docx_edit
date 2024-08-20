@@ -46,7 +46,7 @@ def create_report_table():
         section.left_margin = Cm(1)
         section.right_margin = Cm(1.0)
 
-    report_table = document.add_table(rows=len(pdfiles_list) + 1, cols=8)
+    report_table = document.add_table(rows=(len(pdfiles_list) + 2), cols=8)
 
     report_table.columns[0].width = Cm(1.5)
     report_table.columns[1].width = Cm(3.0)
@@ -55,7 +55,7 @@ def create_report_table():
     report_table.columns[4].width = Cm(3.5)
     report_table.columns[5].width = Cm(4.5)
     report_table.columns[6].width = Cm(4.5)
-    report_table.columns[7].width = Cm(8.0)
+    report_table.columns[7].width = Cm(6.0)
 
     cell0 = report_table.cell(row_idx=0, col_idx=0).text = "№\nп/п"
     cell1 = report_table.cell(row_idx=0, col_idx=1).text = "№ из базы\nданных\nМАГАТЭ"
@@ -87,7 +87,6 @@ def create_report_table():
                     cell_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
                 run = cell_paragraph.runs[0]
                 run.font.size = Pt(12)
-                run.font.name = 'TimesNewRoman'
 
             elif i == 0:
                 cell.text = str(j+1)
@@ -95,7 +94,6 @@ def create_report_table():
                 cell_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
                 run = cell_paragraph.runs[0]
                 run.font.size = Pt(12)
-                run.font.name = 'TimesNewRoman'
 
             elif i == 1:
                 cell.text = table_info[i - 1]
@@ -103,10 +101,8 @@ def create_report_table():
                 cell_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
                 run1 = cell_paragraph.runs[0]
                 run1.font.size = Pt(12)
-                run1.font.name = 'TimesNewRoman'
                 run2 = cell_paragraph.add_run("\n" + table_info[-4])
                 run2.font.size = Pt(10)
-                run2.font.name = 'TimesNewRoman'
 
             elif i == 3:  # Для четвертого столбца
                 cell.text = table_info[i - 1]
@@ -114,10 +110,8 @@ def create_report_table():
                 cell_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
                 run1 = cell_paragraph.runs[0]
                 run1.font.size = Pt(12)
-                run1.font.name = 'TimesNewRoman'
                 run2 = cell_paragraph.add_run("\n" + table_info[-3])
                 run2.font.size = Pt(10)
-                run2.font.name = 'TimesNewRoman'
 
             elif i == 4:  # Для четвертого столбца
                 cell.text = table_info[i - 1]
@@ -125,10 +119,8 @@ def create_report_table():
                 cell_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
                 run1 = cell_paragraph.runs[0]
                 run1.font.size = Pt(12)
-                run1.font.name = 'TimesNewRoman'
                 run2 = cell_paragraph.add_run("\n" + table_info[-2])
                 run2.font.size = Pt(10)
-                run2.font.name = 'TimesNewRoman'
 
             elif i == 6:  # Для четвертого столбца
                 cell.text = table_info[i - 1]
@@ -136,10 +128,17 @@ def create_report_table():
                 cell_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
                 run1 = cell_paragraph.runs[0]
                 run1.font.size = Pt(12)
-                run1.font.name = 'TimesNewRoman'
                 run2 = cell_paragraph.add_run("\n" + table_info[-1])
                 run2.font.size = Pt(10)
-                run2.font.name = 'TimesNewRoman'
+
+        for row in report_table.rows:
+            for cell in row.cells:
+                for paragraph in cell.paragraphs:
+                    # Устанавливаем шрифт и размер
+                    run = paragraph.runs
+                    if run:
+                        for r in run:
+                            r.font.name = 'Times New Roman'
 
         document.save('demo.docx')
 
