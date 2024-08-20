@@ -18,15 +18,17 @@ def get_txt(pdf):
 
 def get_docx_info(pdf):
     def detect_radioactive_elements_in_string(s):
-        pattern = re.compile(r'(?=.*[A-Z])(?=.*[a-z])(?=.*\d.*\d)(?=.*(?:Bq|Sv))(?<! )([^-\s]*[-][^-\s]*\d{2})')
-
-        if pattern.search(s):
+        pattern1 = re.compile(r'(?=.*[A-Z])(?=.*[a-z])(?=.*\d.*\d)(?=.*(?:Bq|Sv|Ci))(?<! )([^-\s]*[-][^-\s]*\d{2})')
+        if pattern1.search(s):
             return True
         return False
 
     def extract_radioactive_elements(s):
         pattern = r'([A-Z][a-z]-\d{2,3})(?=\s|$)'
         matches = re.findall(pattern, s)
+        if not matches:
+            pattern = r'[A-Z]-\d{2,3}'
+            matches = re.findall(pattern, s)
         return matches
 
     def string_delete_trash(input_string):
@@ -124,11 +126,20 @@ def get_docx_info(pdf):
                         break
 
             elif detect_radioactive_elements_in_string(source_text[i]):
+                print(source_text[i])
                 if extract_radioactive_elements(source_text[i])[0] not in incidentMaterial or source_text[i] in incidentMaterial_list:
                     if material_flag:
                         incidentMaterial += '; '
                     incidentMaterial_list.append(source_text[i])
                     incidentMaterial += extract_radioactive_elements(source_text[i])[0]
+                if not material_flag:
+                    material_flag = True
+
+            elif 'Depleted uranium' in source_text[i]:
+                if material_flag:
+                    incidentMaterial += '; '
+                incidentMaterial_list.append(source_text[i])
+                incidentMaterial += 'DU'
                 if not material_flag:
                     material_flag = True
 
@@ -159,6 +170,6 @@ def get_docx_info(pdf):
             incidentCountry_en.strip(), incidentLocation_en.strip(), incidentDangerCategories.strip()]
 
 
-docx_list = get_docx_info('2024-05-002.pdf')
-for elem in docx_list:
-    print(elem)
+# docx_list = get_docx_info('2024-05-002.pdf')
+# for elem in docx_list:
+#     print(elem)
